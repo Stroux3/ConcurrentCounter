@@ -20,7 +20,7 @@ namespace ConcurrentCounter.Tests
         }
 
         [Fact]
-        public async Task Writers_ShouldAccumulateCorrectly()
+        public async Task Writers_ShouldBeSequentialAndAccurate()
         {
             ServerWithReaderWriterLockSlim.Reset();
 
@@ -34,7 +34,7 @@ namespace ConcurrentCounter.Tests
         }
 
         [Fact]
-        public async Task ReadersWaitDuringWrite()
+        public async Task Readers_WaitDuringWrite()
         {
             ServerWithReaderWriterLockSlim.Reset();
             ServerWithReaderWriterLockSlim.AddToCount(1);

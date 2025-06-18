@@ -34,7 +34,7 @@ namespace ConcurrentCounter.Tests
         }
 
         [Fact]
-        public async Task NoReaderInterferenceDuringWrite()
+        public async Task Readers_WaitDuringWrite()
         {
             ServerManual.Reset();
             ServerManual.AddToCount(3);
