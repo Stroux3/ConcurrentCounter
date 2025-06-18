@@ -82,6 +82,10 @@ namespace ConcurrentCounter.Core.Services
             }
         }
 
+        public static void Reset()
+        {
+            count = 0;
+        }
 
     }
 }
