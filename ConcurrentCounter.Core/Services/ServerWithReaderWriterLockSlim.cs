@@ -42,5 +42,10 @@
                 rwLock.ExitWriteLock();
             }
         }
+
+        public static void Reset()
+        {
+            count = 0;
+        }
     }
 }
