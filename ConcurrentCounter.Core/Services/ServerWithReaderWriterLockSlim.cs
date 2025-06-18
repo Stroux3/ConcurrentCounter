@@ -9,6 +9,7 @@
 
         private static readonly ReaderWriterLockSlim rwLock = new();
 
+        #region Получение значения счётчика
         /// <summary>
         /// Возвращает текущее значение счётчика.
         /// Множественные вызовы могут выполняться параллельно.
@@ -25,7 +26,9 @@
                 rwLock.ExitReadLock();
             }
         }
+        #endregion
 
+        #region Добавление значения к счётчику
         /// <summary>
         /// Прибавляет значение к счётчику.
         /// Запись происходит эксклюзивно, блокируя других писателей и читателей.
@@ -42,6 +45,7 @@
                 rwLock.ExitWriteLock();
             }
         }
+        #endregion
 
         public static void Reset()
         {
