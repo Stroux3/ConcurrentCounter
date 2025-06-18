@@ -12,9 +12,13 @@ class Program
        await MultipleReaders_ShouldReadSameValue_ReaderWriterLockSlim();
        await MultipleReaders_ShouldReadSameValue_Manual();
 
-       Console.WriteLine("\t\t\t\tВсе писатели пишут последовательно и никогда одновременно");
+       Console.WriteLine("\n\t\t\t\tВсе писатели пишут последовательно и никогда одновременно");
        await Writers_ShouldBeSequentialAndAccurate_ReaderWriterLockSlim();
        await Writers_ShouldBeSequentialAndAccurate_Manual();
+
+       Console.WriteLine("\n\t\t\t\tВсе читатели ждут пока значение записывается");
+       await Readers_WaitDuringWrite_ReaderWriterLockSlim();
+       await Readers_WaitDuringWrite_Manual();
     }
     #region Все читатели параллельно читают одно и тоже значение
 
@@ -60,6 +64,7 @@ class Program
     #endregion
 
     #region Все писатели пишут последовательно и никогда одновременно
+
     #region Реализация через ReaderWriterLockSlim
     public static async Task Writers_ShouldBeSequentialAndAccurate_ReaderWriterLockSlim()
     {
@@ -83,13 +88,13 @@ class Program
     public static async Task Writers_ShouldBeSequentialAndAccurate_Manual()
     {
         Console.WriteLine($"\nРеализация без использования ReaderWriterLockSlim\n");
-        ServerManual.Reset();
+        ServerWithReaderWriterLockSlim.Reset();
         int count = 5;
         var tasks = Enumerable.Range(0, 10)
             .Select(i => Task.Run(() =>
             {
-                ServerManual.AddToCount(count);
-                int current = ServerManual.GetCount();
+                ServerWithReaderWriterLockSlim.AddToCount(count);
+                int current = ServerWithReaderWriterLockSlim.GetCount();
                 Console.WriteLine($"Писатель {i} пишет {count}, текущие значение: {current}");
             }))
             .ToArray();
@@ -100,7 +105,65 @@ class Program
 
     #endregion
 
+    #region Все читатели ждут пока значение записывается
 
+    #region Реализация через ReaderWriterLockSlim
+    public static async Task Readers_WaitDuringWrite_ReaderWriterLockSlim()
+    {
+        Console.WriteLine($"\nРеализация через ReaderWriterLockSlim\n");
+        ServerManual.Reset();
+        int count = 5;
+        int value = 3;
+        ServerManual.AddToCount(value);
+        Console.WriteLine($"Значение: {value}");
+        var writer = Task.Run(() =>
+        {
+            ServerManual.AddToCount(count);
+            Console.WriteLine($"Писатель пишет значение {count}");
+        });
+
+        var reader = Task.Run(() =>
+        {
+            int result = ServerManual.GetCount();
+            Console.WriteLine($"Читатель читает значение = {result}");
+            return result;
+        });
+
+        await Task.WhenAll(writer, reader);
+
+        int finalResult = await reader;
+    }
+    #endregion
+
+    #region Реализация без использования ReaderWriterLockSlim
+    public static async Task Readers_WaitDuringWrite_Manual()
+    {
+        Console.WriteLine($"\nРеализация без использования ReaderWriterLockSlim\n");
+        ServerManual.Reset();
+        int count = 5;
+        int value = 3;
+        ServerManual.AddToCount(value);
+        Console.WriteLine($"Значение: {value}");
+        var writer = Task.Run(() =>
+        {
+            ServerManual.AddToCount(count);
+            Console.WriteLine($"Писатель пишет значение {count}");
+        });
+
+        var reader = Task.Run(() =>
+        {
+            int result = ServerManual.GetCount();
+            Console.WriteLine($"Читатель читает значение = {result}");
+            return result;
+        });
+
+        await Task.WhenAll(writer, reader);
+
+        int finalResult = await reader;
+    }
+    #endregion
+
+    #endregion
 
 }
 
