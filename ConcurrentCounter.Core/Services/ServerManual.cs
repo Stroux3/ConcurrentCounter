@@ -29,6 +29,59 @@ namespace ConcurrentCounter.Core.Services
             }
         }
 
-        
+        #region Получение значения счётчика
+        /// <summary>
+        /// Получает значение счётчика. Разрешается параллельное чтение.
+        /// </summary>
+        public static int GetCount()
+        {
+            BeginRead();
+
+            try
+            {
+                return count;
+            }
+            finally
+            {
+                EndRead();
+            }
+        }
+        #endregion
+
+        #region Добавление значения к счётчику
+        /// <summary>
+        /// Добавляет значение к счётчику. Писатели работают эксклюзивно.
+        /// </summary>
+        public static void AddToCount(int value)
+        {
+            writerSemaphore.Wait();
+
+            try
+            {
+                WaitForReadersToFinish();
+
+                count += value;
+            }
+            finally
+            {
+                writerSemaphore.Release();
+            }
+        }
+        #endregion
+
+        private static void WaitForReadersToFinish()
+        {
+            while (true)
+            {
+                lock (readerLock)
+                {
+                    if (readers == 0)
+                        break;
+                }
+                Thread.Sleep(1);
+            }
+        }
+
+
     }
 }
